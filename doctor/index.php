@@ -3,7 +3,7 @@
   if(!isset($_SESSION['login'])) {
     header("location: ../index.php");
   }
-  include_once("../forms/config.php");
+  include_once("../config.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -1,6 +1,9 @@
 <?php
 //including the database connection file
-include_once("forms/config.php");
+include_once("config.php");
+include_once("mailer.php");
+
+$message = include_once("forms/message.php");
 
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	$email = mysqli_real_escape_string($mysqli,$_POST['email']);
@@ -41,6 +44,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             $stmt->close();
             $log->close();
             $mysqli->close();
+            sendMail($email,$name, $message['register_title'], $message['register_body']);
             echo "<script>alert('Account created successfully!')</script>";
             echo "<script>window.location.href = 'index.php';</script>";
             exit; 

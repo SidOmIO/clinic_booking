@@ -1,7 +1,7 @@
 <?php
 //including the database connection file
 session_start();
-include_once("forms/config.php");
+include_once("config.php");
 
 if(isset($_SESSION['login'])){
     $stmt = $mysqli->prepare("SELECT type FROM user WHERE email = ?");
