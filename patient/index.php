@@ -14,17 +14,8 @@
     <link rel="stylesheet" href="../assets/css/doctor/index.css">
 </head>
 <body>
-    <div class="sidebar">
-        <!-- Sidebar content -->
-        <ul>
-            <li><a href="#">Menu Item 1</a></li>
-            <li><a href="#">Menu Item 2</a></li>
-            <li><a href="#">Menu Item 3</a></li>
-            <li><a href="../logout.php">Log out</a></li>
-            <!-- Add more sidebar links as needed -->
-        </ul>
-    </div>
-    
+    <?php require_once('sidebar.php');?>    
+
     <div class="main-content">
         <header>
             <h1>Welcome to the Patient Page</h1>
