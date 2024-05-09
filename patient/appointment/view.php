@@ -41,17 +41,20 @@
                             // Fetch data from the database
                         $sql = "SELECT * FROM appointment";
                         $result = $mysqli->query($sql);
+                        $count = 0;
 
                         if ($result->num_rows > 0) {
                             // Output data of each row
                             while($row = $result->fetch_assoc()) {
+                                ++$count;
                                 echo "<tr>";
-                                echo "<td>" . $row["id"] . "</td>";
+                                echo "<td>" . $count . "</td>";
                                 echo "<td>" . $row["title"] . "</td>";
                                 echo "<td>" . $row["date"] . "</td>";
                                 echo "<td>" . $row["time"] . "</td>";
                                 echo "<td>" . $row["remark"] . "</td>";
-                                echo "<td>hehe</td>";
+                                echo "<td><a href='update.php?id=".$row["id"]."' class='btn btn-primary'>Update</a>
+                                          <a href='delete.php?id=".$row["id"]."' class='btn btn-danger'>Delete</a></td>";
                                 echo "</tr>";
                             }
                         } else {
