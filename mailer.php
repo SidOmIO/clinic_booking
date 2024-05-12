@@ -1,5 +1,5 @@
 <?php
-function sendMail($recipient,$name,$subject,$body){
+function sendMail($recipient,$subject,$body){
     // Include PHPMailer autoloader
     require_once realpath(__DIR__ . '/vendor/autoload.php');
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -20,7 +20,7 @@ function sendMail($recipient,$name,$subject,$body){
     // Set up sender and recipient
     $mail->setFrom($_ENV['MAIL_USERNAME'], 'Admin');
 
-    $mail->addAddress($recipient, $name);
+    $mail->addAddress($recipient);
 
     // Set email subject and body
     $mail->Subject = $subject;

@@ -3,25 +3,8 @@
 session_start();
 include_once("config.php");
 
-if(isset($_SESSION['login'])){
-    $stmt = $mysqli->prepare("SELECT type FROM user WHERE email = ?");
-    $stmt->bind_param("s", $_SESSION['login']);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result && $result->num_rows > 0) {
-
-        $row = $result->fetch_assoc();
-        $stat = $row['type'];
-
-        $stmt->close();
-        $mysqli->close();
-        if($stat == 'doctor')
-            header("location: doctor/index.php");
-
-        else if($stat == 'patient')
-            header("location: patient/index.php");
-    }
+if(isset($_SESSION['login']) && isset($_SESSION['type'])) {
+        header("location: main/index.php");
 }
 
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
@@ -46,6 +29,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
         else{
             //Storing the name of user in SESSION database
             $_SESSION['login']=$email;
+            $_SESSION['type']=$row['type'];
             $log = $mysqli->prepare("INSERT INTO admin_log(action_type, email, timestamp) VALUES ('login', ?, NOW())");
             $log->bind_param("s", $email);
             
@@ -55,11 +39,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
                 $log->close();
                 $stmt->close();
                 $mysqli->close();
-                if($stat == 'doctor')
-                    header("location: doctor/index.php");
-
-                else if($stat == 'patient')
-                    header("location: patient/index.php");
+                header("location: main/index.php");
             }
         }
     } else {

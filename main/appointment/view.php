@@ -1,6 +1,6 @@
 <?php
   session_start();
-  if(!isset($_SESSION['login'])) {
+  if(!isset($_SESSION['login']) || (!isset($_SESSION['type']))) {
     header("location: ../../index.php");
   }
   include_once("../../config.php");
@@ -38,9 +38,15 @@
                 </thead>
                 <tbody>
                     <?php 
-                            // Fetch data from the database
-                        $sql = "SELECT * FROM appointment";
-                        $result = $mysqli->query($sql);
+                        // Fetch data from the database
+                        if($_SESSION['type'] = "admin")
+                            $stmt = $mysqli->prepare("SELECT * FROM appointment");
+                        else{
+                            $stmt = $mysqli->prepare("SELECT * FROM appointment WHERE email = ?");
+                            $stmt->bind_param("s", $_SESSION['login']);
+                        }
+                        $stmt->execute();
+                        $result = $stmt->get_result();
                         $count = 0;
 
                         if ($result->num_rows > 0) {
@@ -53,8 +59,8 @@
                                 echo "<td>" . $row["date"] . "</td>";
                                 echo "<td>" . $row["time"] . "</td>";
                                 echo "<td>" . $row["remark"] . "</td>";
-                                echo "<td><a href='update.php?id=".$row["id"]."' class='btn btn-primary'>Update</a>
-                                          <a href='delete.php?id=".$row["id"]."' class='btn btn-danger'>Delete</a></td>";
+                                echo "<td><a href='update.php?id=".$row["id"]."&email=".$row["email"]."' class='btn btn-primary'>Update</a>
+                                          <a href='delete.php?id=".$row["id"]."&email=".$row["email"]."' class='btn btn-danger'>Delete</a></td>";
                                 echo "</tr>";
                             }
                         } else {
@@ -62,11 +68,16 @@
                         }
 
                         // Close the connection
+                        $stmt->close();
                         $mysqli->close();
                         ?>
                     </tbody>
                 </table>
+                <?php 
+                if($_SESSION['type'] == 'patient'){
+                ?>
                 <a href="add.php" class="btn btn-primary">Book an Appointment</a>
+                <?php } ?>
             </div>
         </section>
     </div>

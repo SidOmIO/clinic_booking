@@ -1,8 +1,8 @@
 <?php
   session_start();
-  if(!isset($_SESSION['login'])) {
-    header("location: ../../index.php");
-  }
+  if(isset($_SESSION['login']) && isset($_SESSION['type'])) {
+    header("location: main/index.php");
+    }
   include_once("../../config.php");
   include_once("../../mailer.php");
   
@@ -28,7 +28,7 @@
               $stmt->close();
               $log->close();
               $mysqli->close();
-              sendMail($email,$name, $message['add_appointment_title'], $message['add_appointment_body']);
+              sendMail($email, $message['add_appointment_title'], $message['add_appointment_body']);
               echo "<script>alert('Appointment created successfully!')</script>";
               echo "<script>window.location.href = 'view.php';</script>";
               exit; 

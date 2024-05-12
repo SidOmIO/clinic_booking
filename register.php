@@ -44,7 +44,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             $stmt->close();
             $log->close();
             $mysqli->close();
-            sendMail($email,$name, $message['register_title'], $message['register_body']);
+            sendMail($email, $message['register_title'], $message['register_body']);
             echo "<script>alert('Account created successfully!')</script>";
             echo "<script>window.location.href = 'index.php';</script>";
             exit; 

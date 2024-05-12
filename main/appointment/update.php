@@ -1,6 +1,6 @@
 <?php
   session_start();
-  if(!isset($_SESSION['login'])) {
+  if(!isset($_SESSION['login']) || (!isset($_SESSION['type']))) {
     header("location: ../../index.php");
   }
   include_once("../../config.php");
@@ -9,7 +9,7 @@
   $message = include_once("../../forms/message.php");
   
   if($_SERVER['REQUEST_METHOD'] == 'POST'){
-        $email = $_SESSION['login'];
+        $email = mysqli_real_escape_string($mysqli,$_POST['email']);
         $id = mysqli_real_escape_string($mysqli,$_POST['id']);
         $title = mysqli_real_escape_string($mysqli,$_POST['title']);
         $date = mysqli_real_escape_string($mysqli,$_POST['date']);
@@ -18,18 +18,19 @@
   
         //prepare statement
         $stmt = $mysqli->prepare("UPDATE appointment SET title = ?, date = ?, time = ?, remark = ? WHERE id = ? AND email = ?");
+        $stmt->bind_param("ssssss", $title, $date, $time, $remark, $id, $email);
+
         $log = $mysqli->prepare("INSERT INTO admin_log(action_type, email, timestamp) VALUES ('update_appointment', ?, NOW())");
 
         // Bind parameters
-        $stmt->bind_param("ssssss", $title, $date, $time, $remark, $id, $email);
-        $log->bind_param("s", $email);
+        $log->bind_param("s", $_SESSION['login']);
         
         // Execute the statement
         if ($stmt->execute() && $log->execute()) {
             $stmt->close();
             $log->close();
             $mysqli->close();
-            sendMail($email,$name, $message['update_appointment_title'], $message['update_appointment_body']);
+            sendMail($email, $message['update_appointment_title'], $message['update_appointment_body']);
             echo "<script>alert('Appointment updated successfully!')</script>";
             echo "<script>window.location.href = 'view.php';</script>";
             exit; 
@@ -37,8 +38,8 @@
             echo "Error: " . $stmt->error;
         }
   } else{
-        if(isset($_GET['id'])){
-            $email = $_SESSION['login'];
+        if(isset($_GET['id']) && isset($_GET['email'])){
+            $email = $_GET['email'];
             $id = $_GET['id'];
 
             $stmt = $mysqli->prepare("SELECT * FROM appointment WHERE id = ? AND email = ?");
@@ -79,6 +80,7 @@
             <div class="container">
                 <form action="" method="POST">
                     <input type="hidden" id="id" name="id" value="<?=$id?>">
+                    <input type="hidden" id="email" name="email" value="<?=$email?>">
                     <div class="form-group">
                         <label for="title">Title</label>
                         <input type="text" class="form-control" id="title" name="title" value="<?=$row['title']?>" required>

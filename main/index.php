@@ -1,7 +1,7 @@
 <?php
   session_start();
-  if(!isset($_SESSION['login'])) {
-    header("location: ../index.php");
+  if(!isset($_SESSION['login']) || (!isset($_SESSION['type']))) {
+        header("location: ../../index.php");
   }
   include_once("../config.php");
 ?>
