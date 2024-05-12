@@ -9,18 +9,17 @@
   $message = include_once("../../forms/message.php");
   
   if($_SERVER['REQUEST_METHOD'] == 'POST'){
-      $email = $_SESSION['login'];
-      $title = mysqli_real_escape_string($mysqli,$_POST['title']);
-      $date = mysqli_real_escape_string($mysqli,$_POST['date']);
-      $time = mysqli_real_escape_string($mysqli,$_POST['time']);
+      $doctor_email = $_SESSION['login'];
+      $patient_email = mysqli_real_escape_string($mysqli,$_POST['patient_email']);
+      $appointment_id = mysqli_real_escape_string($mysqli,$_POST['appointment_id']);
       $remark = mysqli_real_escape_string($mysqli,$_POST['remark']);
   
           //prepare statement
-          $stmt = $mysqli->prepare("INSERT INTO appointment(email, title, date, time, remark) VALUES (?, ?, ?, ?, ?)");
-          $log = $mysqli->prepare("INSERT INTO admin_log(action_type, email, timestamp) VALUES ('add_appointment', ?, NOW())");
+          $stmt = $mysqli->prepare("INSERT INTO consultation(appointment_id, patient_email, doctor_email, remark) VALUES (?, ?, ?, ?)");
+          $log = $mysqli->prepare("INSERT INTO admin_log(action_type, email, timestamp) VALUES ('add_consultation', ?, NOW())");
 
           // Bind parameters
-          $stmt->bind_param("sssss", $email, $title, $date, $time, $remark);
+          $stmt->bind_param("ssss", $appointment_id, $patient_email, $doctor_email, $remark);
           $log->bind_param("s", $email);
           
           // Execute the statement
@@ -29,7 +28,7 @@
               $log->close();
               $mysqli->close();
               sendMail($email, $message['add_appointment_title'], $message['add_appointment_body']);
-              echo "<script>alert('Appointment created successfully!')</script>";
+              echo "<script>alert('Remarks added successfully!')</script>";
               echo "<script>window.location.href = 'view.php';</script>";
               exit; 
           } else {
@@ -57,17 +56,10 @@
         <section>
             <div class="container">
                 <form action="" method="POST">
+                <input type="hidden" id="patient_email" name="patient_email" value="<?=$_GET['email']?>">
                     <div class="form-group">
-                        <label for="title">Title</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="date">Date</label>
-                        <input type="date" class="form-control" id="date" name="date" min="<?php echo date('Y-m-d'); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="time">Time</label>
-                        <input type="time" class="form-control" id="time" name="time" required>
+                        <label for="title">Appointment ID</label>
+                        <input type="text" class="form-control" id="appointment_id" name="appointment_id" value="<?=$_GET['id']?>" readonly>
                     </div>
                     <div class="form-group">
                         <label for="remark">Remark</label>
