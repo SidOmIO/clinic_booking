@@ -4,6 +4,9 @@
     header("location: ../../index.php");
   }
   include_once("../../config.php");
+  $stmt = $mysqli->prepare("SELECT a.id, a.email, a.title, a.date, a.time, c.remark, c.appointment_id 
+                            FROM appointment a 
+                            LEFT JOIN consultation c on a.id=c.appointment_id");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -29,16 +32,8 @@
                 <thead>
                     <tr>
                         <th>No.</th>
-                        <th>Appointment ID</th>
-                        <th>Title</th>
-                        <th>Date</th>
-                        <th>Time</th>
+                        <th>Consultation ID</th>
                         <th>Doctor's Remark</th>
-                        <?php 
-                        // Fetch data from the database
-                        if($_SESSION['type'] == "doctor"){ ?>
-                            <th>Action</th>
-                        <?php } ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,7 +63,7 @@
                                     echo "<td>" . $row["time"] . "</td>";
                                     echo "<td>" . $row["remark"] . "</td>";
                                     echo "<td><a href='details.php?id=".$row["appointment_id"]."&email=".$row["email"]."' class='btn btn-primary'>View Details</a>";
-                                } else {
+                                } else if($_SESSION['type'] == "doctor"){
                                     echo "<td>" . $row["id"] . "</td>";
                                     echo "<td>" . $row["title"] . "</td>";
                                     echo "<td>" . $row["date"] . "</td>";

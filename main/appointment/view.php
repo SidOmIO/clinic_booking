@@ -39,7 +39,7 @@
                 <tbody>
                     <?php 
                         // Fetch data from the database
-                        if($_SESSION['type'] = "admin")
+                        if($_SESSION['type'] == "admin")
                             $stmt = $mysqli->prepare("SELECT * FROM appointment");
                         else{
                             $stmt = $mysqli->prepare("SELECT * FROM appointment WHERE email = ?");

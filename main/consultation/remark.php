@@ -13,28 +13,55 @@
       $patient_email = mysqli_real_escape_string($mysqli,$_POST['patient_email']);
       $appointment_id = mysqli_real_escape_string($mysqli,$_POST['appointment_id']);
       $remark = mysqli_real_escape_string($mysqli,$_POST['remark']);
-  
-          //prepare statement
-          $stmt = $mysqli->prepare("INSERT INTO consultation(appointment_id, patient_email, doctor_email, remark) VALUES (?, ?, ?, ?)");
-          $log = $mysqli->prepare("INSERT INTO admin_log(action_type, email, timestamp) VALUES ('add_consultation', ?, NOW())");
+      $medications = $_POST['medication'];
+      $quantities = $_POST['quantity'];
+      $total_price = 0;
 
-          // Bind parameters
-          $stmt->bind_param("ssss", $appointment_id, $patient_email, $doctor_email, $remark);
-          $log->bind_param("s", $email);
+      $stmt = $mysqli->prepare("INSERT INTO consultation(appointment_id, patient_email, doctor_email, remark, total_price) VALUES (?, ?, ?, ?, ?)");
+      $log = $mysqli->prepare("INSERT INTO admin_log(action_type, email, timestamp) VALUES ('add_consultation', ?, NOW())");
+      $stmt_med = $mysqli->prepare("INSERT INTO prescription (consultation_id, medication_id) VALUES (?, ?)");
+      
+      $stmt_med->bind_param("si", $medication, $consultation_id);
+      $stmt->bind_param("ssssi", $appointment_id, $patient_email, $doctor_email, $remark, $total_price);
+      $log->bind_param("s", $doctor_email);
           
-          // Execute the statement
-          if ($stmt->execute() && $log->execute()) {
-              $stmt->close();
-              $log->close();
-              $mysqli->close();
-              sendMail($email, $message['add_appointment_title'], $message['add_appointment_body']);
-              echo "<script>alert('Remarks added successfully!')</script>";
-              echo "<script>window.location.href = 'view.php';</script>";
-              exit; 
-          } else {
-              echo "Error: " . $stmt->error;
-          }
+        if ($stmt->execute() && $log->execute()) {
+
+            $consultation_id = $stmt->insert_id;
+            foreach ($medications as $index => $record) {
+                list($medication, $price) = explode('|', $record);
+                $quantity = $quantities[$index];
+                $total_price += $price * $quantity;
+                $stmt_med->execute();
+            }
+
+            $stmt->close();
+            $stmt_med->close();
+            $log->close();
+            $mysqli->close();
+            sendMail($patient_email, $message['consultation_title'], $message['consultation_body']);
+            echo "<script>alert('Remarks added successfully!')</script>";
+            echo "<script>window.location.href = 'view.php';</script>";
+            exit; 
+        } else {
+            echo "Error: " . $stmt->error;
+        }
   }
+    $query = "SELECT id, name, price FROM medication";
+    $result = $mysqli->query($query);
+
+    $medicationOptions = "";
+    $medicationArray = [];
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $medicationOptions .= "<option value='{$row['id']}|{$row['price']}'>{$row['name']}</option>";
+            $medicationArray[] = ['value' => $row['id'], 'text' => $row['name'], 'price' => $row['price']];
+        }
+    } else {
+        $medicationOptions = "<option value=''>No medications available</option>";
+        $medicationArray[] = ['value' => '', 'text' => 'No medications available'];
+    }
+    $mysqli->close();
   ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -65,15 +92,25 @@
                         <label for="remark">Remark</label>
                         <textarea class="form-control" id="remark" name="remark" required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </form>
+                    <div id="dropdownContainer">
+                    <div class="dropdown">
+                        <label for="medication">Select Medication:</label>
+                        <select name="medication[]" class="medication-select">
+                            <option disabled selected>Select your medicine:-</option>
+                            <?php echo $medicationOptions; ?>
+                        </select>
+                        <label for="quantity">Quantity:</label>
+                        <input type="number" name="quantity[]" min="1" value="1">
+                        <button type="button" onclick="removeDropdown(this)">Remove</button>
+                    </div>
+                </div>
+                <button type="button" onclick="addDropdown()">Add Medication</button>
+                <button type="submit">Submit</button>
+            </form>
             </div>
         </section>
     </div>
-    <script>
-        // Get the current date in the format YYYY-MM-DD
-        var currentDate = new Date().toISOString().split('T')[0];
-        document.getElementById("date").setAttribute("min", currentDate);
-    </script>
+    <script src="../../assets/js/remarks.js"></script>
+    <script>const initialOptions = <?php echo json_encode($medicationArray); ?>;</script>
 </body>
 </html>

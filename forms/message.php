@@ -7,5 +7,7 @@ return array(
     'cancel_appointment_title' => 'Appointment Cancelled',
     'cancel_appointment_body'   => 'Your appointment have been cancelled.',
     'update_appointment_title' => 'Appointment Updated',
-    'update_appointment_body'   => 'Your appointment have been updated.'
+    'update_appointment_body'   => 'Your appointment have been updated.',
+    'consultation_title' => 'Doctor\'s Consultation',
+    'consultation_body'   => 'Your doctor have sent your consultation remarks!'
 );
