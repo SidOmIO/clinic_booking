@@ -17,36 +17,57 @@
       $quantities = $_POST['quantity'];
       $total_price = 0;
 
-      $stmt = $mysqli->prepare("INSERT INTO consultation(appointment_id, patient_email, doctor_email, remark, total_price) VALUES (?, ?, ?, ?, ?)");
-      $log = $mysqli->prepare("INSERT INTO admin_log(action_type, email, timestamp) VALUES ('add_consultation', ?, NOW())");
-      $stmt_med = $mysqli->prepare("INSERT INTO prescription (consultation_id, medication_id) VALUES (?, ?)");
-      
-      $stmt_med->bind_param("si", $medication, $consultation_id);
-      $stmt->bind_param("ssssi", $appointment_id, $patient_email, $doctor_email, $remark, $total_price);
-      $log->bind_param("s", $doctor_email);
-          
-        if ($stmt->execute() && $log->execute()) {
+        $mysqli->begin_transaction();
 
-            $consultation_id = $stmt->insert_id;
-            foreach ($medications as $index => $record) {
-                list($medication, $price) = explode('|', $record);
-                $quantity = $quantities[$index];
-                $total_price += $price * $quantity;
-                $stmt_med->execute();
+        $stmt = $mysqli->prepare("INSERT INTO consultation(appointment_id, patient_email, doctor_email, remark, total_price) VALUES (?, ?, ?, ?, ?)");
+        $log = $mysqli->prepare("INSERT INTO admin_log(action_type, email, timestamp) VALUES ('add_consultation', ?, NOW())");
+        $stmt_med = $mysqli->prepare("INSERT INTO prescription (consultation_id, medication_id) VALUES (?, ?)");
+
+        if ($stmt && $log && $stmt_med) {
+            $stmt->bind_param("ssssi", $appointment_id, $patient_email, $doctor_email, $remark, $total_price);
+            $log->bind_param("s", $doctor_email);
+            
+            if ($stmt->execute() && $log->execute()) {
+                $consultation_id = $stmt->insert_id;
+                
+                foreach ($medications as $index => $record) {
+                    list($medication, $price) = explode('|', $record);
+                    $quantity = $quantities[$index];
+                    $total_price += $price * $quantity;
+                    $stmt_med->bind_param("si", $consultation_id, $medication);
+                    if (!$stmt_med->execute()) {
+                        $mysqli->rollback();
+                        die("Error inserting prescription: " . $stmt_med->error);
+                    }
+                }
+
+                $update_stmt = $mysqli->prepare("UPDATE consultation SET total_price = ? WHERE id = ?");
+                if ($update_stmt) {
+                    $update_stmt->bind_param("di", $total_price, $consultation_id);
+                    if ($update_stmt->execute()) {
+                        $mysqli->commit();
+                    } else {
+                        $mysqli->rollback();
+                        die("Error updating total price: " . $update_stmt->error);
+                    }
+                    $update_stmt->close();
+                } else {
+                    $mysqli->rollback();
+                    die("Error preparing update statement: " . $mysqli->error);
+                }
+                $stmt->close();
+                $stmt_med->close();
+                $log->close();
+                $mysqli->close();
+                sendMail($patient_email, $message['consultation_title'], $message['consultation_body']);
+                echo "<script>alert('Remarks added successfully!')</script>";
+                echo "<script>window.location.href = 'view.php';</script>";
+                exit; 
+            } else {
+                echo "Error: " . $stmt->error;
             }
-
-            $stmt->close();
-            $stmt_med->close();
-            $log->close();
-            $mysqli->close();
-            sendMail($patient_email, $message['consultation_title'], $message['consultation_body']);
-            echo "<script>alert('Remarks added successfully!')</script>";
-            echo "<script>window.location.href = 'view.php';</script>";
-            exit; 
-        } else {
-            echo "Error: " . $stmt->error;
         }
-  }
+}
     $query = "SELECT id, name, price FROM medication";
     $result = $mysqli->query($query);
 

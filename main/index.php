@@ -10,7 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Page</title>
+    <title>Main Page</title>
     <link rel="stylesheet" href="../assets/css/doctor/index.css">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -19,7 +19,7 @@
 
     <div class="main-content">
         <header>
-            <h1>Welcome to the Patient Page</h1>
+            <h1>Welcome <?=$_SESSION['login']?></h1>
         </header>
         
         <section>

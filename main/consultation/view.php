@@ -44,13 +44,13 @@
                 <tbody>
                     <?php 
                         // Fetch data from the database
-                        if($_SESSION['type'] == "doctor")
-                            $stmt = $mysqli->prepare("SELECT a.id, a.email, a.title, a.date, a.time, c.remark, c.appointment_id 
-                            FROM appointment a LEFT JOIN consultation c on a.id=c.appointment_id");
-                        else{
+                        if($_SESSION['type'] == "patient"){
                             $stmt = $mysqli->prepare("SELECT * FROM consultation c JOIN appointment a on a.id=c.appointment_id WHERE patient_email = ?");
                             $stmt->bind_param("s", $_SESSION['login']);
                         }
+                        else
+                            $stmt = $mysqli->prepare("SELECT a.id, a.email, a.title, a.date, a.time, c.id as cid, c.remark, c.appointment_id 
+                                                      FROM appointment a LEFT JOIN consultation c on a.id=c.appointment_id");
                         $stmt->execute();
                         $result = $stmt->get_result();
                         $count = 0;
@@ -77,7 +77,7 @@
                                     if(!$row["appointment_id"])
                                         echo "<td><a href='remark.php?id=".$row["id"]."&email=".$row["email"]."' class='btn btn-primary'>Give Remark</a>";
                                     else
-                                        echo "<td><a href='details.php?id=".$row["appointment_id"]."&email=".$row["email"]."' class='btn btn-primary'>View Details</a>";
+                                        echo "<td><a href='details.php?id=".$row["cid"]."&email=".$row["email"]."' class='btn btn-primary'>View Details</a>";
                                 }
                                 echo "</tr>";
                             }

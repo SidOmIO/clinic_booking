@@ -1,5 +1,4 @@
 <?php
-session_start();
 include_once("../../config.php");
 
 // Get the consultation ID from the URL
@@ -11,7 +10,7 @@ $stmt = $mysqli->prepare($remark_sql);
 $stmt->bind_param("i", $consultation_id);
 $stmt->execute();
 $result = $stmt->get_result();
-$consultation_result = $result->fetch_assoc();
+$consultation = $result->fetch_assoc();
 
 // Fetch prescriptions and medication details
 $prescription_sql = "
@@ -37,7 +36,6 @@ $mysqli->close();
 <head>
     <meta charset="UTF-8">
     <title>Doctor's Remark and Prescription</title>
-    <!-- <link rel="stylesheet" href="../../assets/css/doctor/index.css"> -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .remark {
@@ -58,7 +56,7 @@ $mysqli->close();
     <div class="container mt-5">
         <h2>Doctor's Remark</h2>
         <div class="remark">
-            <?php echo htmlspecialchars($consultation_result['remark']); ?>
+            <?php echo htmlspecialchars($consultation['remark']); ?>
         </div>
 
         <h2>Prescription</h2>
@@ -80,7 +78,7 @@ $mysqli->close();
                 </tbody>
             </table>
             <div class="total-price">
-                <strong>Total Price: RM<?php echo number_format($consultation_result['total_price'], 2); ?></strong>
+                <strong>Total Price: RM<?php echo number_format($consultation['total_price'], 2); ?></strong>
             </div>
         </div>
     </div>
