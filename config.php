@@ -3,7 +3,7 @@ require_once ('vendor/autoload.php');
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-define('APP_BASE_PATH', 'http://localhost/clinic');
+define('APP_BASE_PATH', $_ENV['APP_BASE_PATH']);
 define('APP_MAIN_PATH', APP_BASE_PATH . '/main');
 
 //localhost

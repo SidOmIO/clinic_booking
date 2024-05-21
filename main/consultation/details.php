@@ -15,7 +15,7 @@ $consultation_result = $result->fetch_assoc();
 
 // Fetch prescriptions and medication details
 $prescription_sql = "
-    SELECT m.name as medication, m.price 
+    SELECT m.name as medication, m.price, p.quantity 
     FROM prescription p
     JOIN medication m ON p.medication_id = m.id
     WHERE p.consultation_id = ?";
@@ -67,14 +67,18 @@ $mysqli->close();
                 <thead class="thead-light">
                     <tr>
                         <th>Medication</th>
+                        <th>Quantity</th>
                         <th>Price</th>
+                        <th>Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($prescriptions as $item) { ?>
                     <tr>
                         <td><?php echo htmlspecialchars($item['medication']); ?></td>
+                        <td><?php echo htmlspecialchars($item['quantity']); ?></td>
                         <td>RM<?php echo number_format($item['price'], 2); ?></td>
+                        <td>RM<?php echo number_format($item['price'] * $item['quantity'], 2); ?></td>
                     </tr>
                     <?php } ?>
                 </tbody>
@@ -83,6 +87,17 @@ $mysqli->close();
                 <strong>Total Price: RM<?php echo number_format($consultation_result['total_price'], 2); ?></strong>
             </div>
         </div>
+        <form action="../checkout.php" method="post" id="checkoutForm">
+            <input type="hidden" name="id" value="<?=$consultation_id?>">
+            <?php
+            foreach ($prescriptions as $index => $item) {
+                echo '<input type="hidden" name="items[' . $index . '][name]" value="' . htmlspecialchars($item['medication']) . '">';
+                echo '<input type="hidden" name="items[' . $index . '][price]" value="' . htmlspecialchars($item['price']) . '">';
+                echo '<input type="hidden" name="items[' . $index . '][quantity]" value="' . htmlspecialchars($item['quantity']) . '">';
+            }
+            ?>
+            <button type="submit" class="btn btn-primary">Pay Now</button>
+        </form>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

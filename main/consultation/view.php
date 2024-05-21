@@ -74,9 +74,9 @@
                                     echo "<td>" . $row["date"] . "</td>";
                                     echo "<td>" . $row["time"] . "</td>";
                                     echo "<td>" . $row["remark"] . "</td>";
-                                    if(!$row["appointment_id"])
+                                    if(!$row["appointment_id"] && $_SESSION['type'] == "doctor")
                                         echo "<td><a href='remark.php?id=".$row["id"]."&email=".$row["email"]."' class='btn btn-primary'>Give Remark</a>";
-                                    else
+                                    else if($row["appointment_id"])
                                         echo "<td><a href='details.php?id=".$row["cid"]."&email=".$row["email"]."' class='btn btn-primary'>View Details</a>";
                                 }
                                 echo "</tr>";

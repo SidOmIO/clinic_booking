@@ -21,7 +21,7 @@
 
         $stmt = $mysqli->prepare("INSERT INTO consultation(appointment_id, patient_email, doctor_email, remark, total_price) VALUES (?, ?, ?, ?, ?)");
         $log = $mysqli->prepare("INSERT INTO admin_log(action_type, email, timestamp) VALUES ('add_consultation', ?, NOW())");
-        $stmt_med = $mysqli->prepare("INSERT INTO prescription (consultation_id, medication_id) VALUES (?, ?)");
+        $stmt_med = $mysqli->prepare("INSERT INTO prescription (consultation_id, medication_id, quantity) VALUES (?, ?, ?)");
 
         if ($stmt && $log && $stmt_med) {
             $stmt->bind_param("ssssi", $appointment_id, $patient_email, $doctor_email, $remark, $total_price);
@@ -34,7 +34,7 @@
                     list($medication, $price) = explode('|', $record);
                     $quantity = $quantities[$index];
                     $total_price += $price * $quantity;
-                    $stmt_med->bind_param("si", $consultation_id, $medication);
+                    $stmt_med->bind_param("iii", $consultation_id, $medication, $quantity);
                     if (!$stmt_med->execute()) {
                         $mysqli->rollback();
                         die("Error inserting prescription: " . $stmt_med->error);
