@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 19, 2024 at 08:30 PM
+-- Generation Time: May 22, 2024 at 06:23 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -61,7 +61,8 @@ CREATE TABLE `consultation` (
   `patient_email` varchar(25) NOT NULL,
   `doctor_email` varchar(25) NOT NULL,
   `remark` varchar(255) NOT NULL,
-  `total_price` double NOT NULL
+  `total_price` double NOT NULL,
+  `payment_id` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -73,8 +74,7 @@ CREATE TABLE `consultation` (
 CREATE TABLE `medication` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `price` double NOT NULL,
-  `quantity` int(11) NOT NULL,
+  `price` double NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -92,13 +92,28 @@ INSERT INTO `medication` (`id`, `name`, `price`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `payment`
+--
+
+CREATE TABLE `payment` (
+  `id` int(11) NOT NULL,
+  `consultation_id` int(11) NOT NULL,
+  `stripe_id` varchar(100) NOT NULL,
+  `date` date NOT NULL,
+  `email` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `prescription`
 --
 
 CREATE TABLE `prescription` (
   `id` int(11) NOT NULL,
   `consultation_id` int(11) NOT NULL,
-  `medication_id` int(11) NOT NULL
+  `medication_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -156,6 +171,12 @@ ALTER TABLE `medication`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `payment`
+--
+ALTER TABLE `payment`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `prescription`
 --
 ALTER TABLE `prescription`
@@ -193,6 +214,12 @@ ALTER TABLE `consultation`
 -- AUTO_INCREMENT for table `medication`
 --
 ALTER TABLE `medication`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `payment`
+--
+ALTER TABLE `payment`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

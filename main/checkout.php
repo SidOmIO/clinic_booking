@@ -30,8 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $checkout_session = \Stripe\Checkout\Session::create([
         'mode' => 'payment',
-        'success_url' => $_ENV['APP_BASE_PATH'].'/main/success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url' => $_ENV['APP_BASE_PATH'].`/main/consultation/details.php?id=${$_POST['items']}`,
+        'success_url' => "{$_ENV['APP_BASE_PATH']}/main/consultation/details.php?id={$_POST['id']}&session_id={CHECKOUT_SESSION_ID}",
+        'cancel_url' => "{$_ENV['APP_BASE_PATH']}/main/consultation/details.php?id={$_POST['id']}",
         'locale' => 'auto',
         'line_items' => $line_items
     ]);

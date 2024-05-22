@@ -1,37 +1,38 @@
 <?php
-// Sample data for the invoice
+$items = $_POST['items'];
+
+$line_items = [];
+foreach ($items as $item) {
+    $unit_amount = (int)($item['price'] * 100);
+
+    $line_items[] = [
+            'description' => $item['name'],
+            'quantity' => $item['quantity'],
+            'unit_price' => $item['price']
+    ];
+}
+
 $invoiceData = [
-    'invoice_number' => 'INV-1001',
-    'date' => date('Y-m-d'),
-    'due_date' => date('Y-m-d', strtotime('+30 days')),
+    'invoice_number' => 'INV-'.$_POST['invNo'],
+    'date' => $_POST['date'],
     'bill_to' => [
-        'name' => 'John Doe',
-        'address' => '123 Main St, Anytown, USA',
-        'email' => 'john@example.com'
+        'name' => $_POST['name'],
+        'email' => $_POST['email']
     ],
-    'items' => [
-        ['description' => 'Web Design', 'quantity' => 1, 'unit_price' => 500],
-        ['description' => 'Hosting (1 year)', 'quantity' => 1, 'unit_price' => 100],
-        ['description' => 'Domain (1 year)', 'quantity' => 1, 'unit_price' => 15]
-    ],
+    'items' => $line_items,
     'notes' => 'Thank you for your business!'
 ];
 
-// Function to calculate totals
 function calculateTotals($items) {
-    $subtotal = 0;
+    $total = 0;
     foreach ($items as $item) {
-        $subtotal += $item['quantity'] * $item['unit_price'];
+        $total += $item['quantity'] * $item['unit_price'];
     }
-    $tax = $subtotal * 0.1;  // assuming a 10% tax rate
-    $total = $subtotal + $tax;
 
-    return ['subtotal' => $subtotal, 'tax' => $tax, 'total' => $total];
+    return ['total' => $total];
 }
 
 $totals = calculateTotals($invoiceData['items']);
-
-// Start output buffering
 ob_start();
 ?>
 
@@ -68,7 +69,6 @@ ob_start();
                             <td>
                                 Invoice #: <?php echo $invoiceData['invoice_number']; ?><br>
                                 Created: <?php echo $invoiceData['date']; ?><br>
-                                Due: <?php echo $invoiceData['due_date']; ?>
                             </td>
                         </tr>
                     </table>
@@ -81,7 +81,6 @@ ob_start();
                             <td>
                                 Bill To:<br>
                                 <?php echo $invoiceData['bill_to']['name']; ?><br>
-                                <?php echo $invoiceData['bill_to']['address']; ?><br>
                                 <?php echo $invoiceData['bill_to']['email']; ?>
                             </td>
                         </tr>
@@ -95,20 +94,12 @@ ob_start();
             <?php foreach ($invoiceData['items'] as $item) { ?>
                 <tr class="item">
                     <td><?php echo $item['description']; ?></td>
-                    <td>$<?php echo number_format($item['quantity'] * $item['unit_price'], 2); ?></td>
+                    <td>RM<?php echo number_format($item['quantity'] * $item['unit_price'], 2); ?></td>
                 </tr>
             <?php } ?>
             <tr class="total">
                 <td></td>
-                <td>Subtotal: $<?php echo number_format($totals['subtotal'], 2); ?></td>
-            </tr>
-            <tr class="total">
-                <td></td>
-                <td>Tax: $<?php echo number_format($totals['tax'], 2); ?></td>
-            </tr>
-            <tr class="total">
-                <td></td>
-                <td>Total: $<?php echo number_format($totals['total'], 2); ?></td>
+                <td>Total: RM<?php echo number_format($totals['total'], 2); ?></td>
             </tr>
         </table>
         <p><?php echo $invoiceData['notes']; ?></p>
@@ -117,7 +108,14 @@ ob_start();
 </html>
 
 <?php
-// Get the contents of the buffer and clean the buffer
 $html = ob_get_clean();
-return $html;
+require '../../vendor/autoload.php';
+
+use Dompdf\Dompdf;
+
+$dompdf = new Dompdf();
+$dompdf->loadHtml($html);
+$dompdf->setPaper('A4', 'portrait');
+$dompdf->render();
+$dompdf->stream('invoice.pdf');
 ?>

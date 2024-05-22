@@ -9,5 +9,7 @@ return array(
     'update_appointment_title' => 'Appointment Updated',
     'update_appointment_body'   => 'Your appointment have been updated.',
     'consultation_title' => 'Doctor\'s Consultation',
-    'consultation_body'   => 'Your doctor have sent your consultation remarks!'
+    'consultation_body'   => 'Your doctor have sent your consultation remarks!',
+    'payment_title' => 'Payment Successful!',
+    'payment_body'   => 'Your payment has been successful.'
 );

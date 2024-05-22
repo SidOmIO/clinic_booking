@@ -1,12 +1,27 @@
 <?php
 session_start();
-include_once("../../config.php");
 
-// Get the consultation ID from the URL
+if(!isset($_SESSION['login']) && !isset($_SESSION['type'])) {
+    header("location: ../../index.php");
+}
+
+include_once("../../config.php");
+require ('../../vendor/autoload.php');
+include_once("../../mailer.php");
+$message = include_once("../../forms/message.php");
+
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(dirname(__DIR__)));
+$dotenv->load();
+$stripe_secret_key = $_ENV['STRIPE_SECRET_KEY'];
+
+\Stripe\Stripe::setApiKey($stripe_secret_key);
+
 $consultation_id = $_GET['id'];
 
 // Fetch consultation remark and total price
-$remark_sql = "SELECT remark, total_price FROM consultation WHERE id = ?";
+$remark_sql = "SELECT c.remark, c.total_price, c.payment_id, p.stripe_id, p.date, p.email, u.name FROM consultation c 
+                JOIN payment p on c.payment_id = p.id 
+                JOIN user u on u.email = p.email WHERE c.id = ?";
 $stmt = $mysqli->prepare($remark_sql);
 $stmt->bind_param("i", $consultation_id);
 $stmt->execute();
@@ -30,7 +45,6 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
-$mysqli->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,6 +70,47 @@ $mysqli->close();
 <body>
     <?php require_once('../sidebar.php');?>
     <div class="container mt-5">
+        <?php if(isset($_GET['session_id']) && !$consultation_result['payment_id']) {
+            $session = \Stripe\Checkout\Session::retrieve($_GET['session_id']);
+
+            if ($session->payment_status == 'paid') {
+                $paid = true;
+                
+                // Prepare the insert statement for the payment table
+                $payment_stmt = $mysqli->prepare("INSERT INTO payment(consultation_id, stripe_id, date, email) VALUES (?, ?, ?, ?)");
+                
+                if ($payment_stmt) {
+                    
+                    $date = date('Y-m-d');
+                    $payment_stmt->bind_param("ssss", $consultation_id, $_GET['session_id'], $date, $_SESSION['login']);
+                    
+                    if ($payment_stmt->execute()) {
+                        $payment_id = $payment_stmt->insert_id;
+                        $payment_stmt2 = $mysqli->prepare("UPDATE consultation SET payment_id = ? WHERE id = ?");
+                        
+                        if ($payment_stmt2) {
+                            $payment_stmt2->bind_param("ii", $payment_id, $consultation_id);
+                            if ($payment_stmt2->execute()) {
+                                sendMail($_SESSION['login'], $message['payment_title'], $message['payment_body']);
+                                echo "<div class='remark'>Payment Successful!</div>";
+                            } else {
+                                echo "<div class='remark'>Failed to update consultation with payment details.</div>";
+                            }
+                            $payment_stmt2->close();
+                        } else {
+                            echo "<div class='remark'>Failed to prepare consultation update statement.</div>";
+                        }
+                    } else {
+                        echo "<div class='remark'>Failed to insert payment record.</div>";
+                    }
+                    $payment_stmt->close();
+                } else {
+                    echo "<div class='remark'>Failed to prepare payment insert statement.</div>";
+                }
+            }
+        }
+        $mysqli->close();
+        ?>
         <h2>Doctor's Remark</h2>
         <div class="remark">
             <?php echo htmlspecialchars($consultation_result['remark']); ?>
@@ -86,18 +141,45 @@ $mysqli->close();
             <div class="total-price">
                 <strong>Total Price: RM<?php echo number_format($consultation_result['total_price'], 2); ?></strong>
             </div>
+            <div class="total-price">
+                <strong>Payment Status :
+                    <?php if($consultation_result['payment_id'])
+                            echo "Paid";
+                          else
+                            echo "Not Paid"; ?></strong>
+            </div>
         </div>
-        <form action="../checkout.php" method="post" id="checkoutForm">
-            <input type="hidden" name="id" value="<?=$consultation_id?>">
+        <?php if($_SESSION['type'] == "patient") { 
+                if(!$consultation_result['payment_id'] || ($consultation_result['stripe_id'] != $_GET['session_id'])){
+            ?>
+            <form action="../checkout.php" method="post" id="checkoutForm">
+                <input type="hidden" name="id" value="<?=$consultation_id?>">
+                <?php
+                foreach ($prescriptions as $index => $item) {
+                    echo '<input type="hidden" name="items[' . $index . '][name]" value="' . htmlspecialchars($item['medication']) . '">';
+                    echo '<input type="hidden" name="items[' . $index . '][price]" value="' . htmlspecialchars($item['price']) . '">';
+                    echo '<input type="hidden" name="items[' . $index . '][quantity]" value="' . htmlspecialchars($item['quantity']) . '">';
+                }
+                    echo '<button type="submit" class="btn btn-primary">Pay Now</button>';
+                ?>
+            </form>
+        <?php } else {
+            ?> 
+            <form action="invoice.php" method="post" id="invoiceForm">
+            <input type="hidden" name="invNo" value="<?=$consultation_result['payment_id']?>">
+            <input type="hidden" name="date" value="<?=$consultation_result['date']?>">
+            <input type="hidden" name="email" value="<?=$consultation_result['email']?>">
+            <input type="hidden" name="name" value="<?=$consultation_result['name']?>">
             <?php
             foreach ($prescriptions as $index => $item) {
                 echo '<input type="hidden" name="items[' . $index . '][name]" value="' . htmlspecialchars($item['medication']) . '">';
                 echo '<input type="hidden" name="items[' . $index . '][price]" value="' . htmlspecialchars($item['price']) . '">';
                 echo '<input type="hidden" name="items[' . $index . '][quantity]" value="' . htmlspecialchars($item['quantity']) . '">';
             }
+                echo '<button type="submit" class="btn btn-primary">Download Invoice</button>';
             ?>
-            <button type="submit" class="btn btn-primary">Pay Now</button>
         </form>
+    <?php } }?>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
