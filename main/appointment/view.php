@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Page</title>
-    <link rel="stylesheet" href="../../assets/css/doctor/index.css">
+    <link rel="stylesheet" href="../../assets/css/main/index.css">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -19,12 +19,16 @@
 
     <div class="main-content">
         <header>
-            <h1>Your Appointments</h1>
+            <h1>
+                <?php if($_SESSION['type'] == "patient") 
+                        echo "Your"; 
+                      else 
+                        echo "All";?> 
+            Appointments</h1>
         </header>
         
         <section>
             <div class="container">
-            <h1>Table View</h1>
             <table class="table table-striped table-bordered">
                 <thead>
                     <tr>
@@ -40,9 +44,9 @@
                     <?php 
                         // Fetch data from the database
                         if($_SESSION['type'] == "admin")
-                            $stmt = $mysqli->prepare("SELECT * FROM appointment");
+                            $stmt = $mysqli->prepare("SELECT a.*, c.appointment_id FROM appointment a LEFT JOIN consultation c on c.appointment_id = a.id");
                         else{
-                            $stmt = $mysqli->prepare("SELECT * FROM appointment WHERE email = ?");
+                            $stmt = $mysqli->prepare("SELECT a.*, c.appointment_id FROM appointment a LEFT JOIN consultation c on c.appointment_id = a.id WHERE email = ?");
                             $stmt->bind_param("s", $_SESSION['login']);
                         }
                         $stmt->execute();
@@ -59,8 +63,11 @@
                                 echo "<td>" . $row["date"] . "</td>";
                                 echo "<td>" . $row["time"] . "</td>";
                                 echo "<td>" . $row["remark"] . "</td>";
-                                echo "<td><a href='update.php?id=".$row["id"]."&email=".$row["email"]."' class='btn btn-primary'>Update</a>
-                                          <a href='delete.php?id=".$row["id"]."&email=".$row["email"]."' class='btn btn-danger'>Delete</a></td>";
+                                if(!$row["appointment_id"])
+                                    echo "<td><a href='update.php?id=".$row["id"]."&email=".$row["email"]."' class='btn btn-primary'>Update</a>
+                                              <a href='delete.php?id=".$row["id"]."&email=".$row["email"]."' class='btn btn-danger'>Delete</a></td>";
+                                else
+                                    echo "<td><a href='../consultation/details.php?id=".$row["id"]."&email=".$row["email"]."' class='btn btn-primary'>Go to Consultation Page</a></td>";
                                 echo "</tr>";
                             }
                         } else {

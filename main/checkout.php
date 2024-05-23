@@ -1,5 +1,8 @@
 <?php
 session_start();
+if(!isset($_SESSION['login']) && !isset($_SESSION['type'])) {
+header("location: ../index.php");
+}
 require ('../vendor/autoload.php');
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();

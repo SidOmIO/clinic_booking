@@ -18,17 +18,15 @@ $stripe_secret_key = $_ENV['STRIPE_SECRET_KEY'];
 
 $consultation_id = $_GET['id'];
 
-// Fetch consultation remark and total price
 $remark_sql = "SELECT c.remark, c.total_price, c.payment_id, p.stripe_id, p.date, p.email, u.name FROM consultation c 
-                JOIN payment p on c.payment_id = p.id 
-                JOIN user u on u.email = p.email WHERE c.id = ?";
+                LEFT JOIN payment p on c.payment_id = p.id 
+                JOIN user u on u.email = c.patient_email WHERE c.id = ?";
 $stmt = $mysqli->prepare($remark_sql);
 $stmt->bind_param("i", $consultation_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $consultation_result = $result->fetch_assoc();
 
-// Fetch prescriptions and medication details
 $prescription_sql = "
     SELECT m.name as medication, m.price, p.quantity 
     FROM prescription p
@@ -51,7 +49,7 @@ $stmt->close();
 <head>
     <meta charset="UTF-8">
     <title>Doctor's Remark and Prescription</title>
-    <!-- <link rel="stylesheet" href="../../assets/css/doctor/index.css"> -->
+    <link rel="stylesheet" href="../../assets/css/main/index.css">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .remark {
@@ -69,11 +67,13 @@ $stmt->close();
 </head>
 <body>
     <?php require_once('../sidebar.php');?>
-    <div class="container mt-5">
+    <div class="main-content">
         <?php if(isset($_GET['session_id']) && !$consultation_result['payment_id']) {
             $session = \Stripe\Checkout\Session::retrieve($_GET['session_id']);
 
             if ($session->payment_status == 'paid') {
+                $consultation_result['payment_id'] = $_GET['session_id'];
+                $consultation_result['stripe_id'] = $_GET['session_id'];
                 $paid = true;
                 
                 // Prepare the insert statement for the payment table
@@ -143,14 +143,22 @@ $stmt->close();
             </div>
             <div class="total-price">
                 <strong>Payment Status :
-                    <?php if($consultation_result['payment_id'])
+                    <?php 
+                        if(!isset($_GET['session_id'])){
+                          if($consultation_result['payment_id'])
                             echo "Paid";
                           else
-                            echo "Not Paid"; ?></strong>
+                            echo "Not Paid"; 
+                        } else {
+                            if($consultation_result['stripe_id'] == $_GET['session_id'])
+                                echo "Paid";
+                            else
+                                echo "Not Paid"; 
+                        } ?></strong>
             </div>
         </div>
         <?php if($_SESSION['type'] == "patient") { 
-                if(!$consultation_result['payment_id'] || ($consultation_result['stripe_id'] != $_GET['session_id'])){
+                if(!$consultation_result['payment_id'] || (isset($_GET['session_id']) && $consultation_result['stripe_id'] != $_GET['session_id'])){
             ?>
             <form action="../checkout.php" method="post" id="checkoutForm">
                 <input type="hidden" name="id" value="<?=$consultation_id?>">

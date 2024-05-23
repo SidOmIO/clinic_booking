@@ -64,12 +64,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Registration</title>
-    <link rel="stylesheet" href="../assets/css/doctor/index.css">
+    <link rel="stylesheet" href="../assets/css/main/index.css">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <?php require_once('sidebar.php');?>    
-    <div class="container">
+    <div class="main-content">
         <form action="" method="post" class="registration-form" id="form">
             <h2>User Registration</h2>
             <div class="form-group">

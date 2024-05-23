@@ -1,4 +1,8 @@
 <?php
+session_start();
+if(!isset($_SESSION['login']) && !isset($_SESSION['type'])) {
+header("location: ../../index.php");
+}
 $items = $_POST['items'];
 
 $line_items = [];

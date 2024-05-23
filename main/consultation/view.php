@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Page</title>
-    <link rel="stylesheet" href="../../assets/css/doctor/index.css">
+    <link rel="stylesheet" href="../../assets/css/main/index.css">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -19,12 +19,15 @@
 
     <div class="main-content">
         <header>
-            <h1>Your Consultations</h1>
+            <h1>
+                <?php if($_SESSION['type'] == "patient") 
+                        echo "Your"; 
+                      else 
+                        echo "All";?>  Consultations</h1>
         </header>
         
         <section>
             <div class="container">
-            <h1>Table View</h1>
             <table class="table table-striped table-bordered">
                 <thead>
                     <tr>
