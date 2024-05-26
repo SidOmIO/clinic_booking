@@ -70,37 +70,45 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 <body>
     <?php require_once('sidebar.php');?>    
     <div class="main-content">
-        <form action="" method="post" class="registration-form" id="form">
-            <h2>User Registration</h2>
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <div class="form-group">
-                <label for="confirm-password">Confirm Password</label>
-                <input type="password" id="confirm_password" name="confirm_password" required>
-            </div>
-            <div class="form-group">
-                <label for="type">User Type</label>
-                <input type="radio" id="admin" name="type" value="admin">
-                <label for="admin">Admin</label>
-                <input type="radio" id="doctor" name="type" value="doctor">
-                <label for="css">Doctor</label>
-            </div>
-            <button type="submit">Register</button>
-        </form>
+        <header>
+            <h2>User Registration</h2> 
+        </header>
+        <div class="container">
+            <br>
+            <form action="" method="post" class="registration-form" id="form">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" pattern="[0-9]{10}" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                </div>
+                <label class="form-check-label" for="type">User Type</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="doctor" name="type" value="doctor">
+                    <label class="form-check-label" for="doctor">Doctor</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="admin" name="type" value="admin">
+                    <label class="form-check-label" for="admin">Admin</label>
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary btn-big">Register</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>

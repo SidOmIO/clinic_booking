@@ -30,7 +30,7 @@ function addDropdown() {
         </select>
         <label for="quantity">Quantity:</label>
         <input type="number" name="quantity[]" min="1" value="1">
-        <button type="button" onclick="removeDropdown(this)">Remove</button>
+        <button type="button" class='btn btn-danger' onclick="removeDropdown(this)">Remove</button>
     `;
     
     document.getElementById("dropdownContainer").appendChild(dropdown);

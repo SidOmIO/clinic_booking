@@ -78,6 +78,7 @@
         
         <section>
             <div class="container">
+                <br>
                 <form action="" method="POST">
                     <input type="hidden" id="id" name="id" value="<?=$id?>">
                     <input type="hidden" id="email" name="email" value="<?=$email?>">

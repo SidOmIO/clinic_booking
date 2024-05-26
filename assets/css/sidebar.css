@@ -10,14 +10,13 @@
 body {
   min-height: 100%;
   background: #e3f2fd;
-  padding-left: 40px; /* This should match the width of the sidebar */
 }
 nav {
   position: fixed;
   top: 0;
   left: 0;
-  height: 100vh; /* Full height to cover the entire screen */
-  width: 260px; /* Sidebar width */
+  height: 100vh; 
+  width: 190px; 
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -35,7 +34,7 @@ nav .logo {
 }
 .logo .logo-name {
   color: #333;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 500;
 }
 nav .sidebar {
@@ -70,11 +69,11 @@ nav .sidebar {
 }
 .nav-link .icon {
   margin-right: 14px;
-  font-size: 20px;
+  font-size: 18px;
   color: #707070;
 }
 .nav-link .link {
-  font-size: 16px;
+  font-size: 14px;
   color: #707070;
   font-weight: 400;
 }

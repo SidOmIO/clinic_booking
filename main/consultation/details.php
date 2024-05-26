@@ -51,32 +51,21 @@ $stmt->close();
     <title>Doctor's Remark and Prescription</title>
     <link rel="stylesheet" href="../../assets/css/main/index.css">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .remark {
-            margin-bottom: 20px;
-            padding: 15px;
-            border-left: 5px solid #007bff;
-            background-color: #e9f7fd;
-        }
-        .total-price {
-            font-size: 1.2em;
-            text-align: right;
-            margin-right: 10px;
-        }
-    </style>
 </head>
 <body>
     <?php require_once('../sidebar.php');?>
     <div class="main-content">
+        <header>
+            <h2>Consultation Details</h2> 
+        </header>
+        <br>
         <?php if(isset($_GET['session_id']) && !$consultation_result['payment_id']) {
             $session = \Stripe\Checkout\Session::retrieve($_GET['session_id']);
 
             if ($session->payment_status == 'paid') {
-                $consultation_result['payment_id'] = $_GET['session_id'];
                 $consultation_result['stripe_id'] = $_GET['session_id'];
                 $paid = true;
                 
-                // Prepare the insert statement for the payment table
                 $payment_stmt = $mysqli->prepare("INSERT INTO payment(consultation_id, stripe_id, date, email) VALUES (?, ?, ?, ?)");
                 
                 if ($payment_stmt) {
@@ -86,76 +75,75 @@ $stmt->close();
                     
                     if ($payment_stmt->execute()) {
                         $payment_id = $payment_stmt->insert_id;
+                        $consultation_result['payment_id'] = $payment_id;
                         $payment_stmt2 = $mysqli->prepare("UPDATE consultation SET payment_id = ? WHERE id = ?");
                         
                         if ($payment_stmt2) {
                             $payment_stmt2->bind_param("ii", $payment_id, $consultation_id);
                             if ($payment_stmt2->execute()) {
                                 sendMail($_SESSION['login'], $message['payment_title'], $message['payment_body']);
-                                echo "<div class='remark'>Payment Successful!</div>";
+                                echo "<div class='remark info'>Payment Successful!</div>";
                             } else {
-                                echo "<div class='remark'>Failed to update consultation with payment details.</div>";
+                                echo "<div class='remark warn'>Failed to update consultation with payment details.</div>";
                             }
                             $payment_stmt2->close();
                         } else {
-                            echo "<div class='remark'>Failed to prepare consultation update statement.</div>";
+                            echo "<div class='remark warn'>Failed to prepare consultation update statement.</div>";
                         }
                     } else {
-                        echo "<div class='remark'>Failed to insert payment record.</div>";
+                        echo "<div class='remark warn'>Failed to insert payment record.</div>";
                     }
                     $payment_stmt->close();
                 } else {
-                    echo "<div class='remark'>Failed to prepare payment insert statement.</div>";
+                    echo "<div class='remark warn'>Failed to prepare payment insert statement.</div>";
                 }
             }
         }
         $mysqli->close();
         ?>
         <h2>Doctor's Remark</h2>
-        <div class="remark">
+        <div class="remark info">
             <?php echo htmlspecialchars($consultation_result['remark']); ?>
         </div>
 
         <h2>Prescription</h2>
-        <div class="prescription">
-            <table class="table table-bordered">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Medication</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($prescriptions as $item) { ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($item['medication']); ?></td>
-                        <td><?php echo htmlspecialchars($item['quantity']); ?></td>
-                        <td>RM<?php echo number_format($item['price'], 2); ?></td>
-                        <td>RM<?php echo number_format($item['price'] * $item['quantity'], 2); ?></td>
-                    </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-            <div class="total-price">
-                <strong>Total Price: RM<?php echo number_format($consultation_result['total_price'], 2); ?></strong>
-            </div>
-            <div class="total-price">
-                <strong>Payment Status :
-                    <?php 
-                        if(!isset($_GET['session_id'])){
-                          if($consultation_result['payment_id'])
+        <table class="table table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th>Medication</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($prescriptions as $item) { ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($item['medication']); ?></td>
+                    <td><?php echo htmlspecialchars($item['quantity']); ?></td>
+                    <td>RM<?php echo number_format($item['price'], 2); ?></td>
+                    <td>RM<?php echo number_format($item['price'] * $item['quantity'], 2); ?></td>
+                </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+        <div class="total-price">
+            <strong>Total Price: RM<?php echo number_format($consultation_result['total_price'], 2); ?></strong>
+        </div>
+        <div class="total-price">
+            <strong>Payment Status :
+                <?php 
+                    if(!isset($_GET['session_id'])){
+                        if($consultation_result['payment_id'])
+                        echo "Paid";
+                        else
+                        echo "Not Paid"; 
+                    } else {
+                        if($consultation_result['stripe_id'] == $_GET['session_id'])
                             echo "Paid";
-                          else
+                        else
                             echo "Not Paid"; 
-                        } else {
-                            if($consultation_result['stripe_id'] == $_GET['session_id'])
-                                echo "Paid";
-                            else
-                                echo "Not Paid"; 
-                        } ?></strong>
-            </div>
+                    } ?></strong>
         </div>
         <?php if($_SESSION['type'] == "patient") { 
                 if(!$consultation_result['payment_id'] || (isset($_GET['session_id']) && $consultation_result['stripe_id'] != $_GET['session_id'])){
@@ -189,9 +177,5 @@ $stmt->close();
         </form>
     <?php } }?>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

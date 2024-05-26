@@ -103,8 +103,9 @@
         
         <section>
             <div class="container">
+                <br>
                 <form action="" method="POST">
-                <input type="hidden" id="patient_email" name="patient_email" value="<?=$_GET['email']?>">
+                    <input type="hidden" id="patient_email" name="patient_email" value="<?=$_GET['email']?>">
                     <div class="form-group">
                         <label for="title">Appointment ID</label>
                         <input type="text" class="form-control" id="appointment_id" name="appointment_id" value="<?=$_GET['id']?>" readonly>
@@ -113,21 +114,22 @@
                         <label for="remark">Remark</label>
                         <textarea class="form-control" id="remark" name="remark" required></textarea>
                     </div>
-                    <div id="dropdownContainer">
-                    <div class="dropdown">
-                        <label for="medication">Select Medication:</label>
-                        <select name="medication[]" class="medication-select">
-                            <option disabled selected>Select your medicine:-</option>
-                            <?php echo $medicationOptions; ?>
-                        </select>
-                        <label for="quantity">Quantity:</label>
-                        <input type="number" name="quantity[]" min="1" value="1">
-                        <button type="button" onclick="removeDropdown(this)">Remove</button>
+                    <div>
+                        <div>
+                            <label for="medication">Select Medication:</label>
+                            <select name="medication[]" class="medication-select">
+                                <option disabled selected>Select your medicine:-</option>
+                                <?php echo $medicationOptions; ?>
+                            </select>
+                            <label for="quantity">Quantity:</label>
+                            <input type="number" name="quantity[]" min="1" value="1">
+                            <button type="button" class='btn btn-danger' onclick="removeDropdown(this)">Remove</button>
+                        </div>
                     </div>
-                </div>
-                <button type="button" onclick="addDropdown()">Add Medication</button>
-                <button type="submit">Submit</button>
-            </form>
+                    <button type="button" class='btn btn-secondary' onclick="addDropdown()">Add Medication</button>
+                    <br><br>
+                    <button type="submit" class='btn btn-primary btn-big'>Submit</button>
+                </form>
             </div>
         </section>
     </div>
